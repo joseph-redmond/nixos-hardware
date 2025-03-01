@@ -7,8 +7,7 @@ import re
 import subprocess
 import sys
 from tempfile import NamedTemporaryFile
-
-import requests
+from security import safe_requests
 
 API_BASE = "https://api.github.com"
 PATCH_PATTERN = re.compile(r"^\d{4}-.*\.patch$")
@@ -34,7 +33,7 @@ ref_group.add_argument(
 
 def get_api(endpoint, *args, **kwargs):
     kwargs["headers"] = {"X-GitHub-Api-Version": "2022-11-28"}
-    response = requests.get(API_BASE + endpoint, *args, **kwargs)
+    response = safe_requests.get(API_BASE + endpoint, *args, **kwargs)
     response.raise_for_status()
     return response.json()
 
@@ -74,7 +73,7 @@ def main():
 
     patches_with_hash = []
     for patch in patches:
-        patch_content = requests.get(patch["download_url"])
+        patch_content = safe_requests.get(patch["download_url"])
         patch_hash = get_sri_hash(patch_content.content)
         print(f"{patch['name']}: {patch_hash}")
         patches_with_hash.append({"name": patch["name"], "hash": patch_hash})
